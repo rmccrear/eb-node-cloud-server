@@ -10,3 +10,9 @@ From the terminal, use these commands to spin up an eb instance of you webapp.
     eb init
     eb create
     eb deploy
+
+## Adding Secrets
+
+To add secrets for GitHub Actions to access, you can do so in Settings.
+
+![screenshot of github repository secrets page](docs/img/github-repository-secrets.png)
