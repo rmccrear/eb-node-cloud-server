@@ -1,42 +1,28 @@
-name: Deploy To Beanstalk
-on: 
+name: Deploy The Server
+on:
   push:
     branches:
-      - master
+    - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [16.x]
-
     steps:
-      - uses: actions/checkout@v1
-      - name: Use node.js ${{ matrix.node-version }}
 
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
-      - name: Run npm install
-        run: |
-          npm install
+    - name: Checkout source code
+      uses: actions/checkout@v1
 
-      - name: Generate deployment package
-        run: zip -r package.zip . -x ".git/*" -x ".github/*" -x ".vscode/*"
+    - name: Generate deployment package
+      run: zip -r deploy.zip . -x '*.git*'
 
-      - name: Get timestamp
-        id: timestamp
-        run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H-%M-%S-%3NZ')"  
+    - name: Deploy to EB
+      uses: einaregilsson/beanstalk-deploy@v20
+      with:
+        aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        application_name: node-app-ex-2022-1
+        environment_name: node-app-ex-2022-1-dev
+        version_label: 12345
+        region: us-east1
+        deployment_package: deploy.zip
 
-      - name: Run beanstalk deploy
-        uses: einaregilsson/beanstalk-deploy@v2
-        with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: aws_secret_access_key
-          environment_name: node-app-ex-2022-1-dev
-          region: us-east-1
-          version_label: "${{ steps.timestamp.outputs.date }}"
-          deployment_package: package.zip
